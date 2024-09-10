@@ -1,0 +1,10 @@
+{
+  "extends": ["@tsconfig/node22", "@tsconfig/strictest"],
+  "compilerOptions": {
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "incremental": true,
+    "outDir": "./dist",
+    "baseUrl": "./"
+  }
+}
