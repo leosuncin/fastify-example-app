@@ -13,6 +13,7 @@
     "test": "tsx --test src/__tests__/**/*.ts"
   },
   "dependencies": {
+    "@fastify/autoload": "^5.10.0",
     "@fastify/sensible": "^5.6.0",
     "close-with-grace": "^2.1.0",
     "fastify": "^4.28.1",
