@@ -14,6 +14,12 @@ importers:
       '@fastify/sensible':
         specifier: ^5.6.0
         version: 5.6.0
+      '@fastify/type-provider-typebox':
+        specifier: ^4.1.0
+        version: 4.1.0(@sinclair/typebox@0.33.9)
+      '@sinclair/typebox':
+        specifier: ^0.33.9
+        version: 0.33.9
       close-with-grace:
         specifier: ^2.1.0
         version: 2.1.0
@@ -216,9 +222,17 @@ packages:
   '@fastify/sensible@5.6.0':
     resolution: {integrity: sha512-Vq6Z2ZQy10GDqON+hvLF52K99s9et5gVVxTul5n3SIAf0Kq5QjPRUKkAMT3zPAiiGvoHtS3APa/3uaxfDgCODQ==}
 
+  '@fastify/type-provider-typebox@4.1.0':
+    resolution: {integrity: sha512-mXNBaBEoS6Yf4/O2ujNhu9yEZwvBC7niqRESsiftE9NP1hV6ZdV3ZsFbPf1S520BK3rTZ0F28zr+sMdIXNJlfw==}
+    peerDependencies:
+      '@sinclair/typebox': '>=0.26 <=0.33'
+
   '@lukeed/ms@2.0.2':
     resolution: {integrity: sha512-9I2Zn6+NJLfaGoz9jN3lpwDgAYvfGeNYdbAIjJOqzs4Tpc+VU3Jqq4IofSUBKajiDS8k9fZIg18/z13mpk1bsA==}
     engines: {node: '>=8'}
+
+  '@sinclair/typebox@0.33.9':
+    resolution: {integrity: sha512-agK7y8hO5Gz4Thu5kxTtLiZudNRflR1rTwmnWW5skxMd/+aqQ9XQene8HyyBsiajs5HV6ZQ/pCd3IKsqIfu4Kw==}
 
   '@tsconfig/node22@22.0.0':
     resolution: {integrity: sha512-twLQ77zevtxobBOD4ToAtVmuYrpeYUh3qh+TEp+08IWhpsrIflVHqQ1F1CiPxQGL7doCdBIOOCF+1Tm833faNg==}
@@ -899,7 +913,13 @@ snapshots:
       type-is: 1.6.18
       vary: 1.1.2
 
+  '@fastify/type-provider-typebox@4.1.0(@sinclair/typebox@0.33.9)':
+    dependencies:
+      '@sinclair/typebox': 0.33.9
+
   '@lukeed/ms@2.0.2': {}
+
+  '@sinclair/typebox@0.33.9': {}
 
   '@tsconfig/node22@22.0.0': {}
 

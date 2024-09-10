@@ -1,5 +1,6 @@
 import autoload from '@fastify/autoload';
 import sensible from '@fastify/sensible';
+import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import fastify from 'fastify';
 
 export const app = fastify({
@@ -10,7 +11,7 @@ export const app = fastify({
         },
       }
     : !process.argv.some((arg) => arg.includes('test')),
-});
+}).withTypeProvider<TypeBoxTypeProvider>();
 
 app.register(sensible);
 
