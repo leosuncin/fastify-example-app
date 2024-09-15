@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "App configuration",
+  "required": ["logger", "server"],
+  "additionalProperties": false,
+  "properties": {
+    "logger": {
+      "oneOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "transport": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["target"],
+              "properties": {
+                "target": {
+                  "type": "string"
+                },
+                "options": {
+                  "type": "object"
+                }
+              }
+            },
+            "level": {
+              "type": "string",
+              "enum": ["trace", "debug", "info", "warn", "error", "fatal"]
+            }
+          }
+        }
+      ]
+    },
+    "server": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["host", "port"],
+      "properties": {
+        "host": {
+          "type": "string"
+        },
+        "port": {
+          "oneOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "default": 1337
+        }
+      }
+    }
+  }
+}

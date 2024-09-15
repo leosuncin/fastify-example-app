@@ -1,26 +1,9 @@
 /// <reference path="./override.d.ts" />
-import { parseArgs } from 'node:util';
 
 import closeWithGrace from 'close-with-grace';
 
 import { app } from './app.js';
-
-const options = parseArgs({
-  args: process.argv.slice(2),
-  options: {
-    port: {
-      type: 'string',
-      default: process.env.PORT ?? '1337',
-    },
-    host: {
-      type: 'string',
-      default: 'localhost',
-    },
-  },
-  tokens: false,
-});
-const port = Number.parseInt(options.values.port!, 10);
-const host = options.values.host!;
+import config from './config.js';
 
 closeWithGrace(async ({ err: error, signal }) => {
   if (error) {
@@ -31,7 +14,8 @@ closeWithGrace(async ({ err: error, signal }) => {
 });
 
 try {
-  await app.listen({ port, host });
+  // @ts-expect-error port can be a string or number
+  await app.listen(config.server);
 } catch (error) {
   app.log.error({ error }, 'Failed to start server');
 }

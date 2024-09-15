@@ -1,0 +1,9 @@
+# yaml-language-server: $schema=./schema.json
+
+logger:
+  transport:
+    target: pino-princess
+
+server:
+  host: '127.0.0.1'
+  port: 1337

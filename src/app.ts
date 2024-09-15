@@ -5,14 +5,12 @@ import { fastifySwaggerUi } from '@fastify/swagger-ui';
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import fastify from 'fastify';
 
+import config from './config.js';
+
 export const app = fastify({
-  logger: process.stdout.isTTY
-    ? {
-        transport: {
-          target: 'pino-princess',
-        },
-      }
-    : !process.argv.some((arg) => arg.includes('test')),
+  logger: process.argv.some((arg) => arg.includes('test'))
+    ? false
+    : config.logger,
 }).withTypeProvider<TypeBoxTypeProvider>();
 
 app.register(fastifySwagger, {
