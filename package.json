@@ -10,7 +10,7 @@
     "build": "tsc --removeComments",
     "dev": "tsx --watch src/server.ts",
     "start": "node dist/server.js",
-    "test": "tsx --test src/__tests__/**/*.ts"
+    "test": "tsx --tsconfig tsconfig.test.json --test tests/**/*.ts"
   },
   "dependencies": {
     "@fastify/autoload": "^5.10.0",
