@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "App configuration",
-  "required": ["logger", "server"],
+  "required": ["logger", "server", "db"],
   "additionalProperties": false,
   "properties": {
     "logger": {
@@ -53,6 +53,32 @@
             }
           ],
           "default": 1337
+        }
+      }
+    },
+    "db": {
+      "type": "object",
+      "required": ["host", "port", "user", "password", "database"],
+      "properties": {
+        "host": {
+          "type": "string",
+          "examples": ["localhost"]
+        },
+        "port": {
+          "type": "integer",
+          "examples": [5432]
+        },
+        "user": {
+          "type": "string",
+          "examples": ["postgres"]
+        },
+        "password": {
+          "type": "string",
+          "examples": ["postgres"]
+        },
+        "database": {
+          "type": "string",
+          "examples": ["postgres"]
         }
       }
     }

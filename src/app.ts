@@ -47,6 +47,11 @@ app.register(fastifySensible, {
 });
 
 app.register(fastifyAutoload, {
+  dir: `${import.meta.dirname}/plugins`,
+  options: config,
+});
+
+app.register(fastifyAutoload, {
   dir: `${import.meta.dirname}/routes`,
 });
 
