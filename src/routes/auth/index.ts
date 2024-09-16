@@ -1,6 +1,11 @@
 import { hash } from '@node-rs/argon2';
 import { Static, Type } from '@sinclair/typebox';
-import type { FastifyPluginAsync, RouteShorthandOptions } from 'fastify';
+import { count, eq } from 'drizzle-orm';
+import type {
+  FastifyInstance,
+  FastifyPluginAsync,
+  RouteShorthandOptions,
+} from 'fastify';
 
 import { users } from '../../schema/user.js';
 
@@ -35,7 +40,7 @@ const registerOptions: RouteShorthandOptions = {
   },
 };
 
-const registerRoute: FastifyPluginAsync = async (instance) => {
+const registerRoute: FastifyPluginAsync = async (instance: FastifyInstance) => {
   instance.post<{
     Body: Register;
     Reply: User;
@@ -44,6 +49,34 @@ const registerRoute: FastifyPluginAsync = async (instance) => {
     {
       ...registerOptions,
       async preHandler(request) {
+        const emailExists = await instance.db
+          .select({
+            count: count(users.email),
+          })
+          .from(users)
+          .where(eq(users.email, request.body.email))
+          .execute();
+
+        instance.assert(
+          emailExists.every(({ count }) => count === 0),
+          422,
+          'Email already exists',
+        );
+
+        const usernameExists = await instance.db
+          .select({
+            count: count(users.username),
+          })
+          .from(users)
+          .where(eq(users.username, request.body.username))
+          .execute();
+
+        instance.assert(
+          usernameExists.every(({ count }) => count === 0),
+          422,
+          'Username already exists',
+        );
+
         request.body.password = await hash(request.body.password);
       },
     },
