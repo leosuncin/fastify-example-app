@@ -53,6 +53,7 @@ app.register(fastifyAutoload, {
 
 app.register(fastifyAutoload, {
   dir: `${import.meta.dirname}/routes`,
+  routeParams: true,
 });
 
 app.get('/', (_, reply) => {
