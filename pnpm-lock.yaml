@@ -11,6 +11,9 @@ importers:
       '@fastify/autoload':
         specifier: ^5.10.0
         version: 5.10.0
+      '@fastify/cookie':
+        specifier: ^9.4.0
+        version: 9.4.0
       '@fastify/sensible':
         specifier: ^5.6.0
         version: 5.6.0
@@ -26,6 +29,9 @@ importers:
       '@node-rs/argon2':
         specifier: ^1.8.3
         version: 1.8.3
+      '@node-rs/jsonwebtoken':
+        specifier: ^0.5.6
+        version: 0.5.6
       '@sinclair/typebox':
         specifier: ^0.33.9
         version: 0.33.9
@@ -44,6 +50,9 @@ importers:
       fastify-plugin:
         specifier: ^4.5.1
         version: 4.5.1
+      ms:
+        specifier: ^2.1.3
+        version: 2.1.3
       pino-princess:
         specifier: ^1.0.0
         version: 1.0.0(typescript@5.6.2)
@@ -57,6 +66,9 @@ importers:
       '@tsconfig/strictest':
         specifier: ^2.0.5
         version: 2.0.5
+      '@types/ms':
+        specifier: ^0.7.34
+        version: 0.7.34
       '@types/node':
         specifier: ^22.5.4
         version: 22.5.4
@@ -534,6 +546,9 @@ packages:
   '@fastify/autoload@5.10.0':
     resolution: {integrity: sha512-4A6s86qMbjcpWHmJL7cErtjIxOPuW8c67DLiuO8HoJQxuK97vaptoUnK5BTOwRg1ntYqfc3tjwerTTo5NQ3fEQ==}
 
+  '@fastify/cookie@9.4.0':
+    resolution: {integrity: sha512-Th+pt3kEkh4MQD/Q2q1bMuJIB5NX/D5SwSpOKu3G/tjoGbwfpurIMJsWSPS0SJJ4eyjtmQ8OipDQspf8RbUOlg==}
+
   '@fastify/error@3.4.1':
     resolution: {integrity: sha512-wWSvph+29GR783IhmvdwWnN4bUxTD01Vm5Xad4i7i1VuAOItLvbPAb69sb0IQ2N57yprvhNIwAP5B6xfKTmjmQ==}
 
@@ -674,6 +689,93 @@ packages:
     resolution: {integrity: sha512-sf/QAEI59hsMEEE2J8vO4hKrXrv4Oplte3KI2N4MhMDYpytH0drkVfErmHBfWFZxxIEK03fX1WsBNswS2nIZKg==}
     engines: {node: '>= 10'}
 
+  '@node-rs/jsonwebtoken-android-arm-eabi@0.5.6':
+    resolution: {integrity: sha512-oWOBuEiloffIziQ+9o6W6dvJNYWtcz9lfs1XbD50Ppb+oCsIkGKZcewPIr4kd2jFc0pnRJP7z31H4os5Xiv9+Q==}
+    engines: {node: '>= 10'}
+    cpu: [arm]
+    os: [android]
+
+  '@node-rs/jsonwebtoken-android-arm64@0.5.6':
+    resolution: {integrity: sha512-VMRFuRUdHZY9qNXomV9nqO/QzlvOOpMZbb7Dpr7yd+a6Ke5nIUbR6b9t1pOkO2rwCE1PzVWTmB+10hUKAma2kQ==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [android]
+
+  '@node-rs/jsonwebtoken-darwin-arm64@0.5.6':
+    resolution: {integrity: sha512-fNdfdn4UTLpqoUSEZ0dD96D+R6q50AOW+nj8p3becG9Fzhbd6tW2lvucUtvhn8SpAUY7pYQVq6KRfSw3cxkC2g==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@node-rs/jsonwebtoken-darwin-x64@0.5.6':
+    resolution: {integrity: sha512-lsDag6KdC9o0tBfYnsJpgSvst/UHoXge22YwENUjI2SzqWWDy4g/GE/SAn+qBM4smoDGYrUSvMvlh4Fe3cOYYQ==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [darwin]
+
+  '@node-rs/jsonwebtoken-freebsd-x64@0.5.6':
+    resolution: {integrity: sha512-Q0Q6SNwZBcOWAdJubZa9Tfs0d6pakJmsSoEkrghcvxedL3a9mcD4ZrdQ+u1XnjUBGLLYsG+jc3MwcGkCJijesA==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [freebsd]
+
+  '@node-rs/jsonwebtoken-linux-arm-gnueabihf@0.5.6':
+    resolution: {integrity: sha512-BqTcYMFzW8igMHqwNhnkvAbs3hIebRm2cWYUI1A55Mzl2UdupvOJBoey0VwiSjKgc12fWdL3qFiH1DKI3JMR6Q==}
+    engines: {node: '>= 10'}
+    cpu: [arm]
+    os: [linux]
+
+  '@node-rs/jsonwebtoken-linux-arm64-gnu@0.5.6':
+    resolution: {integrity: sha512-v01TJEiI7oYPcqKd/AZjLTUQBiVO54BwYGKThT3GbQWQiVUBDeKzMNdyKkpx52Dcf2LT+Of4ObTnzxDB7Epzvw==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@node-rs/jsonwebtoken-linux-arm64-musl@0.5.6':
+    resolution: {integrity: sha512-VQhDTMWMnq171ROfxCeofLYq1aNiVfIBXqhqlL16bmxREyZNQ7ZUVGTyhUcWdOseKs0qxISkGVoBN2695ZXP9g==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@node-rs/jsonwebtoken-linux-x64-gnu@0.5.6':
+    resolution: {integrity: sha512-p6vf8LC0q5gMJSYKi8KKLaFPKaG18UejDWeGc6A400qdPxtUcj4SCTsro4mAmq5cgTFqM763Pak4NWB6sooX7Q==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+
+  '@node-rs/jsonwebtoken-linux-x64-musl@0.5.6':
+    resolution: {integrity: sha512-77ejfC4+IVlY0gvEJQURdRZ/sdKrVfgQsoAvShx1AqS2RXk7gHuOfKVsRcq/QRpxkzev5JtWncTogmZ2ByHYrw==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+
+  '@node-rs/jsonwebtoken-wasm32-wasi@0.5.6':
+    resolution: {integrity: sha512-YwlnOVAp44d1DlhAvIolU9ijZ9h77ZWDX+3TYMLtzrgA0Od2X695AK03AU3uGvO0ckNCwZlH+I3WzDJnDbZtdQ==}
+    engines: {node: '>=14.0.0'}
+    cpu: [wasm32]
+
+  '@node-rs/jsonwebtoken-win32-arm64-msvc@0.5.6':
+    resolution: {integrity: sha512-muYokT/VSx2Frf0PRHXqeKvCwthz1GN8qdWt9TA4JQkQH65PJrikrEpmYucqxP9UWw5a6CO2Wtd+0YRnxi0bOA==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [win32]
+
+  '@node-rs/jsonwebtoken-win32-ia32-msvc@0.5.6':
+    resolution: {integrity: sha512-wzKMFIfDPzQ3pwuW43w+cUjWiuq45AjX84+1FZxDV9d8LS6h+Z46ZeA21d939V21MPvKpOnVly6od7yBSCfYJg==}
+    engines: {node: '>= 10'}
+    cpu: [ia32]
+    os: [win32]
+
+  '@node-rs/jsonwebtoken-win32-x64-msvc@0.5.6':
+    resolution: {integrity: sha512-wjvzAFqx0BkjyJOd56TAPYy7Bbcw+bxwUo/kRGwFJDDRtV5/PLWeK82kktRUU1qrHVmUhKK78uyIbDkJ5eCjBA==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [win32]
+
+  '@node-rs/jsonwebtoken@0.5.6':
+    resolution: {integrity: sha512-6w9mRfjiqo0eUMgtqOCypSIp+Q4PCN7OhMga4MIqinmX6JC2bnc2qldwM29bYlNeYe0nFvc072QmBvsHKiFGZg==}
+    engines: {node: '>= 10'}
+
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
     engines: {node: '>= 8'}
@@ -783,6 +885,9 @@ packages:
 
   '@types/minimatch@5.1.2':
     resolution: {integrity: sha512-K0VQKziLUWkVKiRVrx4a40iPaxTUefQmjtkQofBkYRcoaaL/8rhwDWww9qWbrgicNOgnpIsMxyNIUM4+n6dUIA==}
+
+  '@types/ms@0.7.34':
+    resolution: {integrity: sha512-nG96G3Wp6acyAgJqGasjODb+acrI7KltPiRxzHPXnP3NgI28bpQDRv53olbqGXbfcgF5aiiHmO3xpwEpS5Ld9g==}
 
   '@types/node@22.5.4':
     resolution: {integrity: sha512-FDuKUJQm/ju9fT/SeX/6+gBzoPzlVCzfzmGkwKvRHQVxi4BntVbyIwf6a4Xn62mrvndLiml6z/UBXIdEVjQLXg==}
@@ -995,6 +1100,10 @@ packages:
   content-type@1.0.5:
     resolution: {integrity: sha512-nTjqfcBFEipKdXCv4YDQWCfmcLZKm81ldF0pAopTvyrFGVbcR6P/VAAd5G7N+0tTr8QqiU0tFadD6FK4NtJwOA==}
     engines: {node: '>= 0.6'}
+
+  cookie-signature@1.2.1:
+    resolution: {integrity: sha512-78KWk9T26NhzXtuL26cIJ8/qNHANyJ/ZYrmEXFzUmhZdjpBv+DlWlOANRTGBt48YcyslsLrj0bMLFTmXvLRCOw==}
+    engines: {node: '>=6.6.0'}
 
   cookie@0.6.0:
     resolution: {integrity: sha512-U71cyTamuh1CRNCfpGY6to28lxvNwPG4Guz/EVjgf3Jmzv0vlDp1atT9eS5dDjMYHucpHbWns6Lwf3BKz6svdw==}
@@ -2413,6 +2522,11 @@ snapshots:
 
   '@fastify/autoload@5.10.0': {}
 
+  '@fastify/cookie@9.4.0':
+    dependencies:
+      cookie-signature: 1.2.1
+      fastify-plugin: 4.5.1
+
   '@fastify/error@3.4.1': {}
 
   '@fastify/fast-json-stringify-compiler@4.3.0':
@@ -2561,6 +2675,67 @@ snapshots:
       '@node-rs/argon2-win32-arm64-msvc': 1.8.3
       '@node-rs/argon2-win32-ia32-msvc': 1.8.3
       '@node-rs/argon2-win32-x64-msvc': 1.8.3
+
+  '@node-rs/jsonwebtoken-android-arm-eabi@0.5.6':
+    optional: true
+
+  '@node-rs/jsonwebtoken-android-arm64@0.5.6':
+    optional: true
+
+  '@node-rs/jsonwebtoken-darwin-arm64@0.5.6':
+    optional: true
+
+  '@node-rs/jsonwebtoken-darwin-x64@0.5.6':
+    optional: true
+
+  '@node-rs/jsonwebtoken-freebsd-x64@0.5.6':
+    optional: true
+
+  '@node-rs/jsonwebtoken-linux-arm-gnueabihf@0.5.6':
+    optional: true
+
+  '@node-rs/jsonwebtoken-linux-arm64-gnu@0.5.6':
+    optional: true
+
+  '@node-rs/jsonwebtoken-linux-arm64-musl@0.5.6':
+    optional: true
+
+  '@node-rs/jsonwebtoken-linux-x64-gnu@0.5.6':
+    optional: true
+
+  '@node-rs/jsonwebtoken-linux-x64-musl@0.5.6':
+    optional: true
+
+  '@node-rs/jsonwebtoken-wasm32-wasi@0.5.6':
+    dependencies:
+      '@napi-rs/wasm-runtime': 0.2.4
+    optional: true
+
+  '@node-rs/jsonwebtoken-win32-arm64-msvc@0.5.6':
+    optional: true
+
+  '@node-rs/jsonwebtoken-win32-ia32-msvc@0.5.6':
+    optional: true
+
+  '@node-rs/jsonwebtoken-win32-x64-msvc@0.5.6':
+    optional: true
+
+  '@node-rs/jsonwebtoken@0.5.6':
+    optionalDependencies:
+      '@node-rs/jsonwebtoken-android-arm-eabi': 0.5.6
+      '@node-rs/jsonwebtoken-android-arm64': 0.5.6
+      '@node-rs/jsonwebtoken-darwin-arm64': 0.5.6
+      '@node-rs/jsonwebtoken-darwin-x64': 0.5.6
+      '@node-rs/jsonwebtoken-freebsd-x64': 0.5.6
+      '@node-rs/jsonwebtoken-linux-arm-gnueabihf': 0.5.6
+      '@node-rs/jsonwebtoken-linux-arm64-gnu': 0.5.6
+      '@node-rs/jsonwebtoken-linux-arm64-musl': 0.5.6
+      '@node-rs/jsonwebtoken-linux-x64-gnu': 0.5.6
+      '@node-rs/jsonwebtoken-linux-x64-musl': 0.5.6
+      '@node-rs/jsonwebtoken-wasm32-wasi': 0.5.6
+      '@node-rs/jsonwebtoken-win32-arm64-msvc': 0.5.6
+      '@node-rs/jsonwebtoken-win32-ia32-msvc': 0.5.6
+      '@node-rs/jsonwebtoken-win32-x64-msvc': 0.5.6
 
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
@@ -2776,6 +2951,8 @@ snapshots:
 
   '@types/minimatch@5.1.2': {}
 
+  '@types/ms@0.7.34': {}
+
   '@types/node@22.5.4':
     dependencies:
       undici-types: 6.19.8
@@ -2971,6 +3148,8 @@ snapshots:
       safe-buffer: 5.2.1
 
   content-type@1.0.5: {}
+
+  cookie-signature@1.2.1: {}
 
   cookie@0.6.0: {}
 

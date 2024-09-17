@@ -1,4 +1,5 @@
 import { fastifyAutoload } from '@fastify/autoload';
+import { fastifyCookie } from '@fastify/cookie';
 import { fastifySensible } from '@fastify/sensible';
 import { fastifySwagger } from '@fastify/swagger';
 import { fastifySwaggerUi } from '@fastify/swagger-ui';
@@ -46,6 +47,11 @@ app.register(fastifySensible, {
   sharedSchemaId: 'HttpError',
 });
 
+app.register(fastifyCookie, {
+  secret: config.cookie.cookieSecret,
+  parseOptions: config.cookie.options,
+});
+
 app.register(fastifyAutoload, {
   dir: `${import.meta.dirname}/plugins`,
   options: config,
@@ -54,6 +60,7 @@ app.register(fastifyAutoload, {
 app.register(fastifyAutoload, {
   dir: `${import.meta.dirname}/routes`,
   routeParams: true,
+  options: config,
 });
 
 app.get('/', (_, reply) => {
