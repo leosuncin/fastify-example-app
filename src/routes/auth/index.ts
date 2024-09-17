@@ -6,11 +6,9 @@ import type {
   FastifyPluginAsync,
   RouteShorthandOptions,
 } from 'fastify';
-import ms from 'ms';
 
 import type { Config } from '../../../config/config.d.ts';
 import { users } from '../../schema/user.js';
-import { generateTokens } from '../../utils/jwt.js';
 
 const registerBody = Type.Object({
   username: Type.String({ minLength: 1 }),
@@ -45,7 +43,6 @@ const registerOptions: RouteShorthandOptions = {
 
 const registerRoute: FastifyPluginAsync<Config> = async (
   instance: FastifyInstance,
-  options,
 ) => {
   instance.post<{
     Body: Register;
@@ -100,17 +97,9 @@ const registerRoute: FastifyPluginAsync<Config> = async (
 
       instance.assert(user);
 
-      const [sessionToken, refreshToken] = await generateTokens(user);
+      await reply.setAuthenticationTokens(user);
 
-      reply
-        .code(201)
-        .setCookie('SESSION_TOKEN', sessionToken, {
-          maxAge: ms(options.jwt.sessionExpiresIn) / 1_000,
-        })
-        .setCookie('REFRESH_TOKEN', refreshToken, {
-          maxAge: ms(options.jwt.refreshExpiresIn) / 1_000,
-        })
-        .send(user);
+      reply.code(201).send(user);
     },
   );
 };
