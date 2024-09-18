@@ -1,0 +1,52 @@
+logger:
+  transport:
+    target: pino/file
+    options:
+      destination: /tmp/fastify-example-app.log
+server:
+  host: 0.0.0.0
+  port: ${PORT}
+db:
+  host: postgres
+  port: 5432
+  user: ${POSTGRES_USER}
+  password: ${POSTGRES_PASSWORD}
+  database: ${POSTGRES_DB}
+jwt:
+  jwtSecret:
+    - ENC[AES256_GCM,data:TTQroa9FcjVxIDp+49lbGZTiez6iy1QQf2KtUNCsyVcIg63nQN7dQujhzk5hR1CyGHjzCpzaWyeVoV46/mAi4g==,iv:mgYTGnpJTro0nyvaVP7gHPvga6/6F1ZZp9NdExrHTJc=,tag:gW5fLHwrScAzhtiTB84CJQ==,type:str]
+  algorithm: RS512
+  sessionExpiresIn: 15m
+  refreshExpiresIn: 1d
+cookie:
+  cookieSecret:
+    - ENC[AES256_GCM,data:11tt6Otjif0x2yYZ7K+hBRuB3/PD7w0XdpzueGnDRLPFOpHk6RiRp0u/oGlI6JTVKPqe4HSgoIAUS20pTGPZfQ==,iv:Gxy19oGlOwSTxkdoBlGv2QmiE7mRzj81hl1KtdFCzRQ=,tag:94MmHS6SfUPbMZtzHCWD/w==,type:str]
+  options:
+    secure: true
+sops:
+  kms: []
+  gcp_kms: []
+  azure_kv: []
+  lastmodified: '2024-09-18T20:59:11Z'
+  mac: ENC[AES256_GCM,data:jwv4XA2Up7DOXB6YkpGLXvcR/GRJM0NvK8mDF7kRlIQWnaY2G7YvQwDIsaFTljzI/mAt5F2XGvxwoHwjHSP3tOt93XhSq/ySkZe4bPaUKK67mMJJ5mNcKeI1i7KQlmv7o3oIEfjxBvtCUmySQkyEbKD51idxfUfYhmCcCzVK66U=,iv:DYM5aDRhHZAFiwVsQf8376LyNUWwbq4ibjOxj/pYdWE=,tag:v9t7GwP63CTiigwG26gkqA==,type:str]
+  pgp:
+    - created_at: '2024-09-18T20:59:11Z'
+      enc: |
+        -----BEGIN PGP MESSAGE-----
+
+        hQGMAziTx7nJM+ZEAQwAi/ZJN4rAdyrE1aPn8PUnJTDXBuneNZqyrYCaZHYbfuAq
+        gF7zSJNnscno4YOoyHwlivIcYg+z5w9XPjYqmHASOWF9VvnSsKTVz6x2YVNjDItn
+        SNTegsQUC8HaDWrN6Y5kM0jqgkIswTv5UIX+EtfdUvCy1jFvIjtQRmsIvfDM4Uh0
+        TN9GaqLVbDnvHUE7SdxTO8wIRVAKSTPOKPaj85F0jJZSl2lP7lfMZXakms2zZg4E
+        nigyqNxBK9idnzerTjcQZ2cNn/R+t5hZYU9v44CGqfUAuGrQcRGaj8pbDXyJEGYn
+        xfXIeWnddQ0WOJ6M4BMVOvQreyHYA7jhejBJyUh+DjTWHXyHn1SZBSWAV6xi9guz
+        rydWQIEuTepCfEblHz+XcXWP3LelDfehhOnpmV8LL3GwtJo+PJ3qAOBEnBgyT7I9
+        NfX6fq8YzkeM5lErNvSoBIqeDjpqRuF3QXEjeePu3iKszvP0fjsXPHbEby4M1cyl
+        63qQt/CjsSI6BIhmQLIr0l4BPB6MpIO0ePRmmq+6EHTx95mAg1m2GMjV3Bt4BBlK
+        hEPr4AqPl//g/1HhEiEjrlYRrvaKdoZJjPeDOmj4n6K22Xjancg7EErwawFg8IW5
+        gZn5B/RUrBwzNcWSbc6f
+        =6CE8
+        -----END PGP MESSAGE-----
+      fp: 71AFE3E39CCAAF49F46BFAD7FD4449837B4A4A16
+  encrypted_suffix: Secret
+  version: 3.5.0

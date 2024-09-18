@@ -1,0 +1,47 @@
+logger:
+  transport:
+    target: pino-princess
+db:
+  host: localhost
+  port: 5432
+  user: postgres
+  password: postgres
+  database: postgres
+jwt:
+  jwtSecret:
+    - ENC[AES256_GCM,data:bP9msrqiYiFuT6BLV34BkdH2u/FpeZ32W3JcmSYuZQUF7jiNw48AFWs263H26WfIA4sX6xJAuZ6WoCp745PPLbVjWmizvTUBGn3IUao=,iv:x16OCfTo6F+9Vz/39KRktrmcp2TdkCEesCa+x24gSBY=,tag:vJ0ixpPROTtKBsddwj6SxQ==,type:str]
+  algorithm: HS384
+  sessionExpiresIn: 5m
+  refreshExpiresIn: 1h
+cookie:
+  cookieSecret:
+    - ENC[AES256_GCM,data:gsJIXBqbzoLhyuOrggYj2IRggXLMv8BDwrAJ6lCoOvMNLz7KHDv7L4CRDCQJcKV3ZmcTgHJVkIq+Q/2fQakKj6xysM7q9uAswGEQ4n7P,iv:aKv1RhnQLKBDyyW/oNtHNKXeN8tkdVjfLbpEpYnpdcw=,tag:Ay395PDuSPOsYWMzPZ+c6w==,type:str]
+  options:
+    sameSite: lax
+sops:
+  kms: []
+  gcp_kms: []
+  azure_kv: []
+  lastmodified: '2024-09-18T20:58:56Z'
+  mac: ENC[AES256_GCM,data:+L5khh1y9WALm+JFsnGlR9rNw6VH+hUH374FdpcF8rpcyw1oTiqFNcdTRADYZNhHm6PyTF1zxsJTqW7OROL/SeFgtR9cFSNlFhs3LKiapPLDar43fULySbSLMNrYV4W/icav8pQVnXF/iyMEXv02HYSf/clo2+VpykFGVGzYn4M=,iv:MUajGtl6j2DCVMZlqPE6PhId1ePqyAzsv4xzuHVHjPA=,tag:EPsxpirHr8N6FM524bajjA==,type:str]
+  pgp:
+    - created_at: '2024-09-18T20:58:56Z'
+      enc: |
+        -----BEGIN PGP MESSAGE-----
+
+        hQGMAziTx7nJM+ZEAQv+MqRagDivIAfLtCtofFVx5fI5bO1IJrkMKhmXB9YJ66JV
+        QRjGZCU1qLg2ATWsz5rgnwhsZchmXhZChaLihyURFFg4zHCGbHFOwGboWaom2ivC
+        MurNP3e7k0Sv+79Bkvln0F9UYANNDI7qiybMfhL+hVFCYautoUnnq3F5vIVgTCAn
+        QluKjPCv4wJTPj0lFHpJ1/wRgiafieC1HFPhLB3unLfrEl4kFwoAD4qF/K2+UYmI
+        mdoAM9WXMjH/wURqgxlhee3IZshtUI64rEi6zuFs8KFfTNsvCk+oUlr88qOEDsfF
+        +C1ixtQ9zBhp/E2ZoJOoQ70WH5y26flYTjRsDC3OtZwY732CLhMY+YJAvPuPTJBx
+        eF2Fh+ui1oYYr6iyA1mB8cp5mrhOQ5za54X1N9Jt/XAXxes2LRWGtVs6h5OkbSdQ
+        yOp01b2uwEiKEKz+VJGmkWmh7teFUoe94PVC91Ogn9v5rVdTunFjoDkiGc30mxzy
+        GqKCf8J1tBWv24uORn8/0l4Bp++cHQXatK9Ox9S96To9QkC1oVvNO2mOpAmeyODY
+        OXYOZB6N6eLcxK75W4m+DTbw1UkNqsLEnte8UG5+E9jDQDyM+h1LwK7G15T/pH5O
+        rq9nMaq4c/5lQu2K0vI6
+        =yJKM
+        -----END PGP MESSAGE-----
+      fp: 71AFE3E39CCAAF49F46BFAD7FD4449837B4A4A16
+  encrypted_suffix: Secret
+  version: 3.5.0

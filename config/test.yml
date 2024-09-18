@@ -1,0 +1,47 @@
+server:
+  port: 0
+db:
+  host: localhost
+  port: 5432
+  user: postgres
+  password: postgres
+  database: postgres
+jwt:
+  jwtSecret:
+    - ENC[AES256_GCM,data:sjtflUVIWrRU0PY7MowkzYMQmxNqe4ge1EGI2kfzVJsV,iv:uC2Mme3ppa5fJAVltdoZkMGNmRPqxmZ/ztqFXbEo0rc=,tag:wVkrAvOfApP/Og70dBFRBQ==,type:str]
+  algorithm: HS256
+  sessionExpiresIn: 1m
+  refreshExpiresIn: 5m
+cookie:
+  cookieSecret:
+    - ENC[AES256_GCM,data:H5g1kTwukwhrklKen8S6GdWcH5UqJiidgWJG66P++Kmg,iv:Qgr6aMi38bMVAlIdGrrGYwArDB83eug9HXiTBz0UPEg=,tag:gxytaogolfqMOIQrQSEgLg==,type:str]
+  options:
+    secure: false
+    sameSite: lax
+sops:
+  kms: []
+  gcp_kms: []
+  azure_kv: []
+  lastmodified: '2024-09-18T20:59:28Z'
+  mac: ENC[AES256_GCM,data:c0EveDNCt6IjrsUkhJYmeZdUbUjUTxjWkgI2GQlZ+7qyjkWExWEkvj3eHroXrOtF71lW30qm1CtKjAhJ8ZiCBMPz6TBRwKTSWFB7Y43y7DUbcQ7BeN1zNNhbaBOrW/9ligzM3k+YOjtyS5LVl79FcB8h30ywv0zVQrr5x6+5GKM=,iv:4nAKuP9+pkkSFCfdr00LYUaIP/l3AcoIVZUp7vVezYg=,tag:mYFcIKS+6LCSDJ2kHao8PQ==,type:str]
+  pgp:
+    - created_at: '2024-09-18T20:59:28Z'
+      enc: |
+        -----BEGIN PGP MESSAGE-----
+
+        hQGMAziTx7nJM+ZEAQv+LvbYRnf29aE/YYgE283VZoJhVwBxMC/qXl2CK70TAky/
+        Bh1o2puqWblVXbxl97x9q+9YeVM+YV47qzkCBBsMzezF2/4VRMvDyezJl4Q63CYu
+        3sIjbZly+jSshgXjT0xx5G9Y45dappyQ1eG/hKGaJsu+emgMLsyx7o6i5blA26xH
+        5nxcdRpDXgPvjhr946r1Q44WL4rw/963I+s1d/z2Y8WWGpAamXp9vMrSyzaiDnzK
+        mMyO3GcqUMJrFRRjwJpECeC0rT1z0NncHsQBq7DV4A6WwFjU97T9COAh5cd4gAjx
+        /4M8OWGD+cLDTZ7glFZa+yZ5Pse9ZbredKZlYyQUjF0B6uovw7c0N0mESpA+0vCo
+        rd9Ge/7hRg/Fmy0UlC0bv/97pzGJw9WZH/JD7wBc38rDzUmOvG4/u1zPWmGJlz6U
+        ZTYlkkSQJD/yAYnSKFCBbrBUqLMqmeGpXJYSFpRTuOYPtK+rmhaqG7Hz5fuWYUuY
+        99wujUNvYjMYuUBPVna+0l4BJgE9VLWXD16I7ViaAIbU16y+bezNIuddWYBdzoum
+        nS9/cKYbNs3upCLbJeBYGP/bzOg5mJK3IbaLnI+uMJr/710EcL0ZNbl9udzIIxsq
+        xvV6L7vY/FAIgTSrjKIu
+        =GpVs
+        -----END PGP MESSAGE-----
+      fp: 71AFE3E39CCAAF49F46BFAD7FD4449837B4A4A16
+  encrypted_suffix: Secret
+  version: 3.5.0
