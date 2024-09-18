@@ -1,0 +1,17 @@
+logger: false
+
+server:
+  host: 127.0.0.1
+  port: 1337
+
+jwt:
+  algorithm: HS512
+  sessionExpiresIn: 15m
+  refreshExpiresIn: 1d
+
+cookie:
+  options:
+    httpOnly: true
+    signed: true
+    secure: false
+    sameSite: strict

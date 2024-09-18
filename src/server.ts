@@ -2,8 +2,10 @@
 
 import closeWithGrace from 'close-with-grace';
 
-import { app } from './app.js';
+import { buildApp } from './app.js';
 import config from './config.js';
+
+const app = buildApp(config);
 
 closeWithGrace(async ({ err: error, signal }) => {
   if (error) {

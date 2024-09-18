@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "App configuration",
-  "required": ["logger", "server", "db"],
+  "required": ["logger", "server", "db", "jwt", "cookie"],
   "additionalProperties": false,
   "properties": {
     "logger": {
@@ -79,6 +79,83 @@
         "database": {
           "type": "string",
           "examples": ["postgres"]
+        }
+      }
+    },
+    "jwt": {
+      "type": "object",
+      "required": ["jwtSecret", "sessionExpiresIn", "refreshExpiresIn"],
+      "additionalProperties": false,
+      "properties": {
+        "jwtSecret": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 32
+          },
+          "minItems": 1
+        },
+        "algorithm": {
+          "type": "string",
+          "enum": [
+            "HS256",
+            "HS384",
+            "HS512",
+            "ES256",
+            "ES384",
+            "RS256",
+            "RS384",
+            "RS512",
+            "PS256",
+            "PS384",
+            "PS512",
+            "EdDSA"
+          ],
+          "default": "HS384"
+        },
+        "sessionExpiresIn": {
+          "type": "string"
+        },
+        "refreshExpiresIn": {
+          "type": "string"
+        }
+      }
+    },
+    "cookie": {
+      "type": "object",
+      "required": ["cookieSecret", "options"],
+      "additionalProperties": false,
+      "properties": {
+        "cookieSecret": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 32
+          },
+          "minItems": 1
+        },
+        "options": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "httpOnly": {
+              "type": "boolean",
+              "default": true
+            },
+            "signed": {
+              "type": "boolean",
+              "default": true
+            },
+            "secure": {
+              "type": "boolean",
+              "default": false
+            },
+            "sameSite": {
+              "type": "string",
+              "enum": ["strict", "lax", "none"],
+              "default": "lax"
+            }
+          }
         }
       }
     }

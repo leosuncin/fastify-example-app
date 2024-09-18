@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { app } from 'src/app.js';
+import { buildApp } from '../src/app.js';
+import config from '../src/config.js';
+
+const app = buildApp(config);
 
 test('GET /', async () => {
   const response = await app.inject().get('/');
