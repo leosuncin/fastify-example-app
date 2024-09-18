@@ -32,6 +32,8 @@
     "postgres": "^3.4.4"
   },
   "devDependencies": {
+    "@devoxa/integresql-client": "^2.0.0",
+    "@faker-js/faker": "^9.0.1",
     "@tsconfig/node22": "^22.0.0",
     "@tsconfig/strictest": "^2.0.5",
     "@types/ms": "^0.7.34",

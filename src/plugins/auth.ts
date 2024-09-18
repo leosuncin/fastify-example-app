@@ -5,8 +5,8 @@ import ms from 'ms';
 
 import type { Config } from '../../config/config.d.ts';
 
-const SESSION_COOKIE_NAME = 'SESSION_TOKEN';
-const REFRESH_COOKIE_NAME = 'REFRESH_TOKEN';
+export const SESSION_COOKIE_NAME = 'SESSION_TOKEN';
+export const REFRESH_COOKIE_NAME = 'REFRESH_TOKEN';
 
 const auth: FastifyPluginCallback<Config> = (fastify, options, done) => {
   fastify.decorateReply(
