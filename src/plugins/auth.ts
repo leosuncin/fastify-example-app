@@ -5,12 +5,6 @@ import ms from 'ms';
 
 import type { Config } from '../../config/config.d.ts';
 
-declare module 'fastify' {
-  interface FastifyReply {
-    setAuthenticationTokens(user: { email: string }): Promise<void>;
-  }
-}
-
 const SESSION_COOKIE_NAME = 'SESSION_TOKEN';
 const REFRESH_COOKIE_NAME = 'REFRESH_TOKEN';
 
