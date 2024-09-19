@@ -1,0 +1,58 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  test:
+    name: Run the unit tests 🧪
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ${{ github.actor }}
+          POSTGRES_PASSWORD: ${{ github.sha }}
+          POSTGRES_DB: ${{ github.repository }}
+        ports:
+          - 5432:5432
+        # needed because the postgres container does not provide a healthcheck
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+      integresql:
+        image: allaboutapps/integresql
+        env:
+          INTEGRESQL_PGUSER: ${{ github.actor }}
+          INTEGRESQL_PGPASSWORD: ${{ github.sha }}
+          INTEGRESQL_PGDATABASE: ${{ github.repository }}
+          INTEGRESQL_PGHOST: postgres
+        ports:
+          - 5000:5000
+    steps:
+      - name: Checkout 🛎
+        uses: actions/checkout@v4
+      - name: Install PNPM 🧰
+        uses: wyvox/action-setup-pnpm@v3
+        with:
+          node-version: latest
+      - name: Setup SOPS 🦖
+        uses: nhedger/setup-sops@v2
+      - name: Import GPG key 🔐
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.PGP_PRIVATE_KEY }}
+          passphrase: ${{ secrets.PGP_PASSWORD_PHRASE }}
+      - name: Decrypt configuration 🔓
+        run: |
+          pnpm exec strong-config decrypt config/development.yml
+          pnpm exec strong-config decrypt config/test.yml
+      - name: Run tests 🧪
+        run: pnpm exec tsx --tsconfig tsconfig.test.json --test --experimental-test-coverage tests/**/*.ts
+        env:
+          INTEGRESQL_URL: http://localhost:${{ job.services.integresql.ports['5000'] }}
