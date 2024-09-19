@@ -9,6 +9,7 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import ms from 'ms';
 import postgres from 'postgres';
+import { hash as hashArgon2 } from '@node-rs/argon2';
 
 import { buildApp } from '../src/app.js';
 import config from '../src/config.js';
@@ -17,6 +18,7 @@ import {
   SESSION_COOKIE_NAME,
 } from '../src/plugins/auth.js';
 import { users } from '../src/schema/user.js';
+import { cpus } from 'node:os';
 
 const integreSQLClient = new IntegreSQLClient({
   url: process.env['INTEGRESQL_URL'] ?? 'http://localhost:5000',
@@ -71,104 +73,225 @@ describe('Auth routes', () => {
     await app.close();
   });
 
-  it('validate the register data', async () => {
-    const response = await app.inject().post('/auth/register').payload({});
+  describe('POST /auth/register', () => {
+    it('validate the register data', async () => {
+      const response = await app.inject().post('/auth/register').payload({});
 
-    assert.equal(response.statusCode, 400);
-    assert.ok(
-      'error' in response.json() && response.json().error === 'Bad Request',
-    );
-  });
-
-  it('register a new user', async () => {
-    const payload = {
-      username: faker.internet.userName(),
-      email: faker.internet.email(),
-      password: faker.internet.password(),
-    };
-    const response = await app.inject().post('/auth/register').payload(payload);
-
-    assert.equal(response.statusCode, 201);
-    assert.deepEqual(response.json(), {
-      bio: '',
-      email: payload.email,
-      image: null,
-      username: payload.username,
+      assert.equal(response.statusCode, 400);
+      assert.ok(
+        'error' in response.json() && response.json().error === 'Bad Request',
+      );
     });
-    assert.equal(response.cookies.length, 2);
-    assert.ok(
-      response.cookies.every(
-        ({ httpOnly, sameSite, secure }) =>
-          httpOnly &&
-          sameSite!.localeCompare(config.cookie.options.sameSite!, 'en', {
-            sensitivity: 'base',
-          }) === 0 &&
-          !!secure === config.cookie.options.secure,
-      ),
-    );
 
-    const sessionCookie = response.cookies.find(
-      (cookie) => cookie.name === SESSION_COOKIE_NAME,
-    );
-    const refreshCookie = response.cookies.find(
-      (cookie) => cookie.name === REFRESH_COOKIE_NAME,
-    );
+    it('register a new user', async () => {
+      const payload = {
+        username: faker.internet.userName(),
+        email: faker.internet.email(),
+        password: faker.internet.password(),
+      };
+      const response = await app
+        .inject()
+        .post('/auth/register')
+        .payload(payload);
 
-    assert.ok(sessionCookie);
-    assert.ok(refreshCookie);
-    assert.equal(
-      ms(sessionCookie.maxAge! * 1_000),
-      config.jwt.sessionExpiresIn,
-    );
-    assert.equal(
-      ms(refreshCookie.maxAge! * 1_000),
-      config.jwt.refreshExpiresIn,
-    );
-  });
+      assert.equal(response.statusCode, 201);
+      assert.deepEqual(response.json(), {
+        bio: '',
+        email: payload.email,
+        image: null,
+        username: payload.username,
+      });
+      assert.equal(response.cookies.length, 2);
+      assert.ok(
+        response.cookies.every(
+          ({ httpOnly, sameSite, secure }) =>
+            httpOnly &&
+            sameSite!.localeCompare(config.cookie.options.sameSite!, 'en', {
+              sensitivity: 'base',
+            }) === 0 &&
+            !!secure === config.cookie.options.secure,
+        ),
+      );
 
-  it('avoid to register a duplicated username', async () => {
-    const username = faker.internet.userName();
-    const payload = {
-      username,
-      email: faker.internet.email(),
-      password: faker.internet.password(),
-    };
+      const sessionCookie = response.cookies.find(
+        (cookie) => cookie.name === SESSION_COOKIE_NAME,
+      );
+      const refreshCookie = response.cookies.find(
+        (cookie) => cookie.name === REFRESH_COOKIE_NAME,
+      );
 
-    await app.db
-      .insert(users)
-      .values({ username, email: '', password: '' })
-      .execute();
+      assert.ok(sessionCookie);
+      assert.ok(refreshCookie);
+      assert.equal(
+        ms(sessionCookie.maxAge! * 1_000),
+        config.jwt.sessionExpiresIn,
+      );
+      assert.equal(
+        ms(refreshCookie.maxAge! * 1_000),
+        config.jwt.refreshExpiresIn,
+      );
+    });
 
-    const response = await app.inject().post('/auth/register').payload(payload);
+    it('avoid to register a duplicated username', async () => {
+      const username = faker.internet.userName();
+      const payload = {
+        username,
+        email: faker.internet.email(),
+        password: faker.internet.password(),
+      };
 
-    assert.equal(response.statusCode, 422);
-    assert.deepEqual(response.json(), {
-      error: 'Unprocessable Entity',
-      message: 'Username already exists',
-      statusCode: 422,
+      await app.db
+        .insert(users)
+        .values({ username, email: '', password: '' })
+        .execute();
+
+      const response = await app
+        .inject()
+        .post('/auth/register')
+        .payload(payload);
+
+      assert.equal(response.statusCode, 422);
+      assert.deepEqual(response.json(), {
+        error: 'Unprocessable Entity',
+        message: 'Username already exists',
+        statusCode: 422,
+      });
+    });
+
+    it('avoid to register a duplicated email', async () => {
+      const email = faker.internet.email();
+      const payload = {
+        email,
+        username: faker.internet.userName(),
+        password: faker.internet.password(),
+      };
+
+      await app.db
+        .insert(users)
+        .values({ username: '', email, password: '' })
+        .execute();
+
+      const response = await app
+        .inject()
+        .post('/auth/register')
+        .payload(payload);
+
+      assert.equal(response.statusCode, 422);
+      assert.deepEqual(response.json(), {
+        error: 'Unprocessable Entity',
+        message: 'Email already exists',
+        statusCode: 422,
+      });
     });
   });
 
-  it('avoid to register a duplicated email', async () => {
-    const email = faker.internet.email();
-    const payload = {
-      email,
-      username: faker.internet.userName(),
-      password: faker.internet.password(),
-    };
+  describe('POST /auth/login', () => {
+    it('validate the login data', async () => {
+      const response = await app.inject().post('/auth/login').payload({});
 
-    await app.db
-      .insert(users)
-      .values({ username: '', email, password: '' })
-      .execute();
+      assert.equal(response.statusCode, 400);
+      assert.ok(
+        'error' in response.json() && response.json().error === 'Bad Request',
+      );
+    });
 
-    const response = await app.inject().post('/auth/register').payload(payload);
+    it('login with a valid user', async () => {
+      const password = faker.internet.password();
+      const [user] = await app.db
+        .insert(users)
+        .values({
+          username: faker.internet.userName(),
+          email: faker.internet.email(),
+          password: await hashArgon2(password, { parallelism: cpus().length }),
+        })
+        .returning()
+        .execute();
 
-    assert.equal(response.statusCode, 422);
-    assert.deepEqual(response.json(), {
-      error: 'Unprocessable Entity',
-      message: 'Email already exists',
-      statusCode: 422,
+      const response = await app
+        .inject()
+        .post('/auth/login')
+        .payload({ email: user.email, password });
+
+      assert.equal(response.statusCode, 200);
+      assert.deepEqual(response.json(), {
+        bio: '',
+        email: user.email,
+        image: null,
+        username: user.username,
+      });
+      assert.equal(response.cookies.length, 2);
+      assert.ok(
+        response.cookies.every(
+          ({ httpOnly, sameSite, secure }) =>
+            httpOnly &&
+            sameSite!.localeCompare(config.cookie.options.sameSite!, 'en', {
+              sensitivity: 'base',
+            }) === 0 &&
+            !!secure === config.cookie.options.secure,
+        ),
+      );
+
+      const sessionCookie = response.cookies.find(
+        (cookie) => cookie.name === SESSION_COOKIE_NAME,
+      );
+      const refreshCookie = response.cookies.find(
+        (cookie) => cookie.name === REFRESH_COOKIE_NAME,
+      );
+
+      assert.ok(sessionCookie);
+      assert.ok(refreshCookie);
+      assert.equal(
+        ms(sessionCookie.maxAge! * 1_000),
+        config.jwt.sessionExpiresIn,
+      );
+      assert.equal(
+        ms(refreshCookie.maxAge! * 1_000),
+        config.jwt.refreshExpiresIn,
+      );
+    });
+
+    it('fail to login with an invalid email', async () => {
+      const response = await app
+        .inject()
+        .post('/auth/login')
+        .payload({
+          email: faker.internet.email(),
+          password: faker.internet.password(),
+        });
+
+      assert.equal(response.statusCode, 401);
+      assert.deepEqual(response.json(), {
+        error: 'Unauthorized',
+        message: 'Invalid email',
+        statusCode: 401,
+      });
+      assert.equal(response.cookies.length, 0);
+    });
+
+    it('fail to login with an invalid password', async () => {
+      const password = faker.internet.password();
+      const [user] = await app.db
+        .insert(users)
+        .values({
+          username: faker.internet.userName(),
+          email: faker.internet.email(),
+          password: await hashArgon2(password, { parallelism: cpus().length }),
+        })
+        .returning()
+        .execute();
+
+      const response = await app
+        .inject()
+        .post('/auth/login')
+        .payload({ email: user.email, password: faker.internet.password() });
+
+      assert.equal(response.statusCode, 401);
+      assert.deepEqual(response.json(), {
+        error: 'Unauthorized',
+        message: 'Invalid password',
+        statusCode: 401,
+      });
+      assert.equal(response.cookies.length, 0);
     });
   });
 });
