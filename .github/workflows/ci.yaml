@@ -14,6 +14,10 @@ jobs:
   test:
     name: Run the unit tests 🧪
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      checks: write
     services:
       postgres:
         image: postgres:16
@@ -53,6 +57,6 @@ jobs:
           pnpm exec strong-config decrypt config/development.yml
           pnpm exec strong-config decrypt config/test.yml
       - name: Run tests 🧪
-        run: pnpm exec tsx --tsconfig tsconfig.test.json --test --experimental-test-coverage tests/**/*.ts
+        run: pnpm run test:ci
         env:
           INTEGRESQL_URL: http://localhost:${{ job.services.integresql.ports['5000'] }}
