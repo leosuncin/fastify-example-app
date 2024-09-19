@@ -1,4 +1,4 @@
-import { hash } from '@node-rs/argon2';
+import { hash, verify } from '@node-rs/argon2';
 import { Static, Type } from '@sinclair/typebox';
 import { count, eq } from 'drizzle-orm';
 import type {
@@ -9,6 +9,13 @@ import type {
 
 import type { Config } from '../../../config/config.d.ts';
 import { users } from '../../schema/user.js';
+
+const loginBody = Type.Object({
+  email: Type.String({ format: 'email' }),
+  password: Type.String({ minLength: 8, format: 'password' }),
+});
+
+type Login = Static<typeof loginBody>;
 
 const registerBody = Type.Object({
   username: Type.String({ minLength: 1 }),
@@ -36,6 +43,20 @@ const registerOptions: RouteShorthandOptions = {
     body: registerBody,
     response: {
       201: userResponse,
+      default: { $ref: 'HttpError' },
+    },
+  },
+};
+
+const loginOptions: RouteShorthandOptions = {
+  schema: {
+    tags: ['User and Authentication'],
+    summary: 'Existing user login',
+    description: 'Login for existing user',
+    operationId: 'Login',
+    body: loginBody,
+    response: {
+      200: userResponse,
       default: { $ref: 'HttpError' },
     },
   },
@@ -102,6 +123,33 @@ const registerRoute: FastifyPluginAsync<Config> = async (
       reply.code(201).send(user);
     },
   );
+
+  instance.post<{
+    Body: Login;
+    Reply: User;
+  }>('/login', loginOptions, async (request, reply) => {
+    const [user] = await instance.db
+      .select({
+        bio: users.bio,
+        email: users.email,
+        image: users.image,
+        password: users.password,
+        username: users.username,
+      })
+      .from(users)
+      .where(eq(users.email, request.body.email))
+      .execute();
+
+    instance.assert(user, 401, 'Invalid email');
+
+    const hasValidPassword = await verify(user.password, request.body.password);
+
+    instance.assert(hasValidPassword, 401, 'Invalid password');
+
+    await reply.setAuthenticationTokens(user);
+
+    reply.send(user);
+  });
 };
 
 export default registerRoute;
