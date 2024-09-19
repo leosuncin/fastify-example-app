@@ -1,3 +1,5 @@
+import { cpus } from 'node:os';
+
 import { hash, verify } from '@node-rs/argon2';
 import { Static, Type } from '@sinclair/typebox';
 import { count, eq } from 'drizzle-orm';
@@ -101,7 +103,9 @@ const registerRoute: FastifyPluginAsync<Config> = async (
           'Username already exists',
         );
 
-        request.body.password = await hash(request.body.password);
+        request.body.password = await hash(request.body.password, {
+          parallelism: cpus().length,
+        });
       },
     },
     async (request, reply) => {
@@ -142,7 +146,13 @@ const registerRoute: FastifyPluginAsync<Config> = async (
 
     instance.assert(user, 401, 'Invalid email');
 
-    const hasValidPassword = await verify(user.password, request.body.password);
+    const hasValidPassword = await verify(
+      user.password,
+      request.body.password,
+      {
+        parallelism: cpus().length,
+      },
+    );
 
     instance.assert(hasValidPassword, 401, 'Invalid password');
 
