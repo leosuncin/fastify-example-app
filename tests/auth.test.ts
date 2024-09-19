@@ -1,4 +1,4 @@
-/// <reference types="../src/override.d.ts" />
+/// <reference types="../src/overrides.d.ts" />
 
 import assert from 'node:assert/strict';
 import { afterEach, before, beforeEach, describe, it } from 'node:test';

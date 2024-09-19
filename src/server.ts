@@ -1,5 +1,3 @@
-/// <reference path="./override.d.ts" />
-
 import closeWithGrace from 'close-with-grace';
 
 import { buildApp } from './app.js';
