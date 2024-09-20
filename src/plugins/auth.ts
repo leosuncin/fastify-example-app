@@ -2,6 +2,7 @@ import { Algorithm, sign, verify } from '@node-rs/jsonwebtoken';
 import {
   FastifyInstance,
   FastifyPluginCallback,
+  FastifyReply,
   FastifyRequest,
 } from 'fastify';
 import { fastifyPlugin } from 'fastify-plugin';
@@ -99,6 +100,15 @@ const auth: FastifyPluginCallback<Config> = (
   );
 
   fastify.decorateRequest('userId', null);
+
+  fastify.decorateReply(
+    'clearAuthenticationTokens',
+    function clearTokens(this: FastifyReply) {
+      return this.clearCookie(SESSION_COOKIE_NAME).clearCookie(
+        REFRESH_COOKIE_NAME,
+      );
+    },
+  );
 
   done();
 };
