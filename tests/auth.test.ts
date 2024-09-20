@@ -393,4 +393,36 @@ describe('Auth routes', () => {
       });
     });
   });
+
+  describe('DELETE /auth/logout', () => {
+    it('clear the authentication cookies', async () => {
+      const response = await app.inject().delete('/auth/logout');
+
+      assert.equal(response.statusCode, 204);
+      assert.equal(response.cookies.length, 2);
+      assert.ok(
+        response.cookies.every(
+          ({ httpOnly, sameSite, secure, expires }) =>
+            httpOnly &&
+            sameSite!.localeCompare(config.cookie.options.sameSite!, 'en', {
+              sensitivity: 'base',
+            }) === 0 &&
+            !!secure === config.cookie.options.secure &&
+            expires!.getTime() < Date.now(),
+        ),
+      );
+
+      const sessionCookie = response.cookies.find(
+        (cookie) => cookie.name === SESSION_COOKIE_NAME,
+      );
+      const refreshCookie = response.cookies.find(
+        (cookie) => cookie.name === REFRESH_COOKIE_NAME,
+      );
+
+      assert.ok(sessionCookie);
+      assert.ok(refreshCookie);
+      assert.equal(sessionCookie.value, '');
+      assert.equal(refreshCookie.value, '');
+    });
+  });
 });
