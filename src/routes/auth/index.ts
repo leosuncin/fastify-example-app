@@ -74,6 +74,7 @@ const getCurrentUserOptions: RouteShorthandOptions = {
       200: userResponse,
       default: { $ref: 'HttpError' },
     },
+    security: [{ cookieAuth: [] }],
   },
 };
 
