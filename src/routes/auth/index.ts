@@ -78,6 +78,18 @@ const getCurrentUserOptions: RouteShorthandOptions = {
   },
 };
 
+const logoutOptions: RouteShorthandOptions = {
+  schema: {
+    tags: ['User and Authentication'],
+    summary: 'Log out of the session',
+    description: 'Log out the currently logged user',
+    operationId: 'Logout',
+    response: {
+      204: Type.Unknown(),
+    },
+  },
+};
+
 const registerRoute: FastifyPluginAsync<Config> = async (
   instance: FastifyInstance,
 ) => {
@@ -187,6 +199,10 @@ const registerRoute: FastifyPluginAsync<Config> = async (
       reply.send(request.user as User);
     },
   );
+
+  instance.delete('/logout', logoutOptions, async (_, reply) => {
+    reply.clearAuthenticationTokens().code(204).send();
+  });
 };
 
 export default registerRoute;

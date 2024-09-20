@@ -15,5 +15,6 @@ declare module 'fastify' {
 
   interface FastifyReply {
     setAuthenticationTokens(user: { email: string }): Promise<void>;
+    clearAuthenticationTokens(): FastifyReply;
   }
 }
