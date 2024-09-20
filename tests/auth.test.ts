@@ -1,15 +1,17 @@
 /// <reference types="../src/overrides.d.ts" />
 
 import assert from 'node:assert/strict';
+import { cpus } from 'node:os';
 import { afterEach, before, beforeEach, describe, it } from 'node:test';
 
 import { IntegreSQLClient } from '@devoxa/integresql-client';
 import { faker } from '@faker-js/faker';
+import { hash as hashArgon2 } from '@node-rs/argon2';
+import { Algorithm, sign } from '@node-rs/jsonwebtoken';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import ms from 'ms';
 import postgres from 'postgres';
-import { hash as hashArgon2 } from '@node-rs/argon2';
 
 import { buildApp } from '../src/app.js';
 import config from '../src/config.js';
@@ -18,7 +20,6 @@ import {
   SESSION_COOKIE_NAME,
 } from '../src/plugins/auth.js';
 import { users } from '../src/schema/user.js';
-import { cpus } from 'node:os';
 
 const integreSQLClient = new IntegreSQLClient({
   url: process.env['INTEGRESQL_URL'] ?? 'http://localhost:5000',
@@ -251,13 +252,10 @@ describe('Auth routes', () => {
     });
 
     it('fail to login with an invalid email', async () => {
-      const response = await app
-        .inject()
-        .post('/auth/login')
-        .payload({
-          email: faker.internet.email(),
-          password: faker.internet.password(),
-        });
+      const response = await app.inject().post('/auth/login').payload({
+        email: faker.internet.email(),
+        password: faker.internet.password(),
+      });
 
       assert.equal(response.statusCode, 401);
       assert.deepEqual(response.json(), {
@@ -292,6 +290,107 @@ describe('Auth routes', () => {
         statusCode: 401,
       });
       assert.equal(response.cookies.length, 0);
+    });
+  });
+
+  describe('GET /auth/me', () => {
+    it('validate that the tokens are required', async () => {
+      const response = await app.inject().get('/auth/me');
+
+      assert.equal(response.statusCode, 401);
+      assert.equal(response.json().message, 'An active session is required');
+    });
+
+    it('validate that the cookies are signed', async () => {
+      const response = await app
+        .inject()
+        .get('/auth/me')
+        .cookies({ [SESSION_COOKIE_NAME]: 'invalid' });
+
+      assert.equal(response.statusCode, 401);
+      assert.equal(response.json().message, 'Invalid session cookie');
+    });
+
+    it('validate that the session cookie is valid', async () => {
+      const secret = config.jwt.jwtSecret.at(-1)!;
+      const sessionToken = await sign(
+        {
+          sub: 1,
+          iat: Date.now(),
+          exp: Date.now() + ms(config.jwt.sessionExpiresIn),
+          aud: 'session',
+        },
+        secret,
+      );
+
+      const response = await app
+        .inject()
+        .get('/auth/me')
+        .cookies({ [SESSION_COOKIE_NAME]: sessionToken });
+
+      assert.equal(response.statusCode, 401);
+      assert.equal(response.json().message, 'Invalid session cookie');
+    });
+
+    it('validate that the session token is valid', async () => {
+      const secret = config.jwt.jwtSecret.at(-1)!;
+      const user = {
+        id: 1,
+        email: faker.internet.email(),
+        username: faker.internet.userName(),
+        bio: '',
+        image: null,
+      };
+      const sessionToken = await sign(
+        {
+          sub: user.email,
+          exp: Date.now() + ms(config.jwt.sessionExpiresIn),
+          aud: 'refresh',
+          usr: user,
+        },
+        secret,
+      );
+      const response = await app
+        .inject()
+        .get('/auth/me')
+        .cookies({ [SESSION_COOKIE_NAME]: app.signCookie(sessionToken) });
+
+      assert.equal(response.statusCode, 401);
+      assert.equal(response.json().message, 'Invalid session token');
+    });
+
+    it('respond with the user from the session', async () => {
+      const secret = config.jwt.jwtSecret.at(-1)!;
+      const user = {
+        id: 1,
+        email: faker.internet.email(),
+        username: faker.internet.userName(),
+        bio: '',
+        image: null,
+      };
+      const sessionToken = await sign(
+        {
+          sub: user.email,
+          iat: Date.now(),
+          exp: Date.now() + ms(config.jwt.sessionExpiresIn),
+          aud: 'session',
+          usr: user,
+        },
+        secret,
+        { algorithm: config.jwt.algorithm as Algorithm },
+      );
+      const response = await app
+        .inject()
+        .get('/auth/me')
+        .cookies({ [SESSION_COOKIE_NAME]: app.signCookie(sessionToken) });
+
+      assert.equal(response.statusCode, 200);
+      assert.deepEqual(response.json(), {
+        email: user.email,
+        username: user.username,
+        bio: user.bio,
+        image: user.image,
+      });
     });
   });
 });
