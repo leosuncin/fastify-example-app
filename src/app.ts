@@ -1,3 +1,4 @@
+import { fastifyAuth } from '@fastify/auth';
 import { fastifyAutoload } from '@fastify/autoload';
 import { fastifyCookie } from '@fastify/cookie';
 import { fastifySensible } from '@fastify/sensible';
@@ -47,6 +48,7 @@ export function buildApp(options: Config) {
       secret: options.cookie.cookieSecret,
       parseOptions: options.cookie.options,
     })
+    .register(fastifyAuth)
     .register(fastifyAutoload, {
       dir: `${import.meta.dirname}/plugins`,
       options,

@@ -64,6 +64,19 @@ const loginOptions: RouteShorthandOptions = {
   },
 };
 
+const getCurrentUserOptions: RouteShorthandOptions = {
+  schema: {
+    tags: ['User and Authentication'],
+    summary: 'Get current user',
+    description: 'Gets the currently logged-in user',
+    operationId: 'GetCurrentUser',
+    response: {
+      200: userResponse,
+      default: { $ref: 'HttpError' },
+    },
+  },
+};
+
 const registerRoute: FastifyPluginAsync<Config> = async (
   instance: FastifyInstance,
 ) => {
@@ -113,6 +126,7 @@ const registerRoute: FastifyPluginAsync<Config> = async (
         .insert(users)
         .values(request.body)
         .returning({
+          id: users.id,
           bio: users.bio,
           email: users.email,
           image: users.image,
@@ -134,6 +148,7 @@ const registerRoute: FastifyPluginAsync<Config> = async (
   }>('/login', loginOptions, async (request, reply) => {
     const [user] = await instance.db
       .select({
+        id: users.id,
         bio: users.bio,
         email: users.email,
         image: users.image,
@@ -160,6 +175,17 @@ const registerRoute: FastifyPluginAsync<Config> = async (
 
     reply.send(user);
   });
+
+  instance.get<{ Reply: User }>(
+    '/me',
+    {
+      ...getCurrentUserOptions,
+      onRequest: instance.auth([instance.verifyTokens]),
+    },
+    async (request, reply) => {
+      reply.send(request.user as User);
+    },
+  );
 };
 
 export default registerRoute;
