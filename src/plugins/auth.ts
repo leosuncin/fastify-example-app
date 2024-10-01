@@ -36,7 +36,10 @@ const auth: FastifyPluginCallback<Config> = (
 ) => {
   fastify.decorateReply(
     'setAuthenticationTokens',
-    async function setAuthenticationTokens(user: Omit<User, 'password'>) {
+    async function setAuthenticationTokens(
+      user: Omit<User, 'password'>,
+      refresh = true,
+    ) {
       const iat = Date.now();
       const secret = options.jwt.jwtSecret.at(-1)!;
 
@@ -55,6 +58,14 @@ const auth: FastifyPluginCallback<Config> = (
         secret,
         { algorithm: options.jwt.algorithm as Algorithm },
       );
+      this.setCookie(SESSION_COOKIE_NAME, sessionToken, {
+        maxAge: ms(options.jwt.sessionExpiresIn) / 1_000,
+      });
+
+      if (!refresh) {
+        return;
+      }
+
       const refreshToken = await sign(
         {
           sub: 'refresh',
@@ -66,10 +77,6 @@ const auth: FastifyPluginCallback<Config> = (
         secret,
         { algorithm: options.jwt.algorithm as Algorithm },
       );
-
-      this.setCookie(SESSION_COOKIE_NAME, sessionToken, {
-        maxAge: ms(options.jwt.sessionExpiresIn) / 1_000,
-      });
       this.setCookie(REFRESH_COOKIE_NAME, refreshToken, {
         maxAge: ms(options.jwt.refreshExpiresIn) / 1_000,
       });
@@ -115,6 +122,37 @@ const auth: FastifyPluginCallback<Config> = (
       return this.clearCookie(SESSION_COOKIE_NAME).clearCookie(
         REFRESH_COOKIE_NAME,
       );
+    },
+  );
+
+  fastify.decorate(
+    'verifyRefreshToken',
+    async function verifyRefreshToken(request: FastifyRequest) {
+      const { [REFRESH_COOKIE_NAME]: refreshCookie } = request.cookies;
+
+      fastify.assert(refreshCookie, 401, 'A refresh cookie is required');
+      const refreshToken = request.unsignCookie(refreshCookie);
+
+      fastify.assert(refreshToken.valid, 401, 'Invalid refresh cookie');
+
+      try {
+        const secret = options.jwt.jwtSecret.at(-1)!;
+        const payload = (await verify(refreshToken.value, secret, {
+          algorithms: [options.jwt.algorithm as Algorithm],
+          sub: 'refresh',
+          aud: ['session'],
+          requiredSpecClaims: ['aud', 'exp', 'sub'],
+        })) as RefreshPayload;
+
+        request.user = { id: payload.uid };
+      } catch (error) {
+        fastify.log.error(
+          { error },
+          error instanceof Error ? error.message : String(error),
+        );
+
+        throw fastify.httpErrors.unauthorized('Invalid refresh token');
+      }
     },
   );
 

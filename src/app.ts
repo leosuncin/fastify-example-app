@@ -8,7 +8,7 @@ import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import fastify from 'fastify';
 
 import type { Config } from '../config/config.d.ts';
-import { SESSION_COOKIE_NAME } from './plugins/auth.js';
+import { REFRESH_COOKIE_NAME, SESSION_COOKIE_NAME } from './plugins/auth.js';
 
 export function buildApp(options: Config) {
   return fastify({
@@ -45,6 +45,11 @@ export function buildApp(options: Config) {
               type: 'apiKey',
               in: 'cookie',
               name: SESSION_COOKIE_NAME,
+            },
+            refreshAuth: {
+              type: 'apiKey',
+              in: 'cookie',
+              name: REFRESH_COOKIE_NAME,
             },
           },
         },
