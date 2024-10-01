@@ -11,13 +11,19 @@ import ms from 'ms';
 import type { Config } from '../../config/config.d.ts';
 import type { User } from '../schema/user.js';
 
-type Audience = 'session' | 'refresh';
-type Payload = {
-  sub: string;
+type SessionPayload = {
+  sub: 'authenticate';
   iat: number;
   exp: number;
-  aud: Audience;
-  usr?: Omit<User, 'password'>;
+  aud: 'session';
+  usr: Omit<User, 'password'>;
+};
+type RefreshPayload = {
+  sub: 'refresh';
+  iat: number;
+  exp: number;
+  aud: 'session';
+  uid: User['id'];
 };
 
 export const SESSION_COOKIE_NAME = 'SESSION_TOKEN';
@@ -40,22 +46,23 @@ const auth: FastifyPluginCallback<Config> = (
 
       const sessionToken = await sign(
         {
-          sub: user.email,
+          sub: 'authenticate',
           iat,
           exp: iat + ms(options.jwt.sessionExpiresIn),
           aud: 'session',
           usr: user,
-        } satisfies Payload,
+        } satisfies SessionPayload,
         secret,
         { algorithm: options.jwt.algorithm as Algorithm },
       );
       const refreshToken = await sign(
         {
-          sub: user.email,
+          sub: 'refresh',
           iat,
           exp: iat + ms(options.jwt.refreshExpiresIn),
-          aud: 'refresh',
-        } satisfies Payload,
+          aud: 'session',
+          uid: user.id,
+        } satisfies RefreshPayload,
         secret,
         { algorithm: options.jwt.algorithm as Algorithm },
       );
@@ -70,8 +77,8 @@ const auth: FastifyPluginCallback<Config> = (
   );
 
   fastify.decorate(
-    'verifyTokens',
-    async function verifyTokens(request: FastifyRequest) {
+    'verifySessionToken',
+    async function verifySessionToken(request: FastifyRequest) {
       const { [SESSION_COOKIE_NAME]: sessionCookie } = request.cookies;
 
       fastify.assert(sessionCookie, 401, 'An active session is required');
@@ -83,9 +90,10 @@ const auth: FastifyPluginCallback<Config> = (
         const secret = options.jwt.jwtSecret.at(-1)!;
         const payload = (await verify(sessionToken.value, secret, {
           algorithms: [options.jwt.algorithm as Algorithm],
+          sub: 'authenticate',
           aud: ['session'],
           requiredSpecClaims: ['aud', 'exp', 'sub'],
-        })) as Payload;
+        })) as SessionPayload;
 
         request.user = payload.usr!;
       } catch (error) {

@@ -193,7 +193,7 @@ const registerRoute: FastifyPluginAsync<Config> = async (
     '/me',
     {
       ...getCurrentUserOptions,
-      onRequest: instance.auth([instance.verifyTokens]),
+      onRequest: instance.auth([instance.verifySessionToken]),
     },
     async (request, reply) => {
       reply.send(request.user as User);

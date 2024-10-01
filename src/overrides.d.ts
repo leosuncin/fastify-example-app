@@ -6,7 +6,7 @@ import { User, users } from './src/schema/user.js';
 declare module 'fastify' {
   interface FastifyInstance {
     db: ReturnType<typeof drizzle<{ users: typeof users }>>;
-    verifyTokens: FastifyAuthFunction;
+    verifySessionToken: FastifyAuthFunction;
   }
 
   interface FastifyRequest {

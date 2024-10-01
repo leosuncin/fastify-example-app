@@ -294,18 +294,35 @@ describe('Auth routes', () => {
   });
 
   describe('GET /auth/me', () => {
-    it('validate that the tokens are required', async () => {
+    it('validate that the session cookie is required', async () => {
       const response = await app.inject().get('/auth/me');
 
       assert.equal(response.statusCode, 401);
       assert.equal(response.json().message, 'An active session is required');
     });
 
-    it('validate that the cookies are signed', async () => {
+    it('validate that the session cookie is signed', async () => {
+      const sessionToken = await sign(
+        {
+          sub: 'authenticate',
+          iat: Date.now(),
+          exp: Date.now() + ms(config.jwt.sessionExpiresIn),
+          aud: 'session',
+          usr: {
+            id: 1,
+            email: faker.internet.email(),
+            username: faker.internet.userName(),
+            bio: '',
+            image: null,
+          },
+        },
+        config.jwt.jwtSecret.at(-1)!,
+        { algorithm: config.jwt.algorithm as Algorithm },
+      );
       const response = await app
         .inject()
         .get('/auth/me')
-        .cookies({ [SESSION_COOKIE_NAME]: 'invalid' });
+        .cookies({ [SESSION_COOKIE_NAME]: sessionToken });
 
       assert.equal(response.statusCode, 401);
       assert.equal(response.json().message, 'Invalid session cookie');
@@ -315,10 +332,8 @@ describe('Auth routes', () => {
       const secret = config.jwt.jwtSecret.at(-1)!;
       const sessionToken = await sign(
         {
-          sub: 1,
           iat: Date.now(),
           exp: Date.now() + ms(config.jwt.sessionExpiresIn),
-          aud: 'session',
         },
         secret,
       );
@@ -332,7 +347,7 @@ describe('Auth routes', () => {
       assert.equal(response.json().message, 'Invalid session cookie');
     });
 
-    it('validate that the session token is valid', async () => {
+    it("validate that the session token's claims are valid", async () => {
       const secret = config.jwt.jwtSecret.at(-1)!;
       const user = {
         id: 1,
@@ -343,7 +358,7 @@ describe('Auth routes', () => {
       };
       const sessionToken = await sign(
         {
-          sub: user.email,
+          sub: 'authenticate',
           exp: Date.now() + ms(config.jwt.sessionExpiresIn),
           aud: 'refresh',
           usr: user,
@@ -370,7 +385,7 @@ describe('Auth routes', () => {
       };
       const sessionToken = await sign(
         {
-          sub: user.email,
+          sub: 'authenticate',
           iat: Date.now(),
           exp: Date.now() + ms(config.jwt.sessionExpiresIn),
           aud: 'session',
