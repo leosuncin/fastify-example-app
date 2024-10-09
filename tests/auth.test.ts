@@ -316,7 +316,7 @@ describe('Auth routes', () => {
             image: null,
           },
         },
-        config.jwt.jwtSecret.at(-1)!,
+        config.jwt.jwtSecret[0],
         { algorithm: config.jwt.algorithm as Algorithm },
       );
       const response = await app
@@ -329,7 +329,7 @@ describe('Auth routes', () => {
     });
 
     it('validate that the session cookie is valid', async () => {
-      const secret = config.jwt.jwtSecret.at(-1)!;
+      const secret = config.jwt.jwtSecret[0];
       const sessionToken = await sign(
         {
           iat: Date.now(),
@@ -348,7 +348,7 @@ describe('Auth routes', () => {
     });
 
     it("validate that the session token's claims are valid", async () => {
-      const secret = config.jwt.jwtSecret.at(-1)!;
+      const secret = config.jwt.jwtSecret[0];
       const user = {
         id: 1,
         email: faker.internet.email(),
@@ -375,7 +375,7 @@ describe('Auth routes', () => {
     });
 
     it('respond with the user from the session', async () => {
-      const secret = config.jwt.jwtSecret.at(-1)!;
+      const secret = config.jwt.jwtSecret[0];
       const user = {
         id: 1,
         email: faker.internet.email(),
@@ -443,7 +443,7 @@ describe('Auth routes', () => {
 
   describe('POST /auth/refresh', () => {
     it('respond with the user and a new session cookie', async () => {
-      const secret = config.jwt.jwtSecret.at(-1)!;
+      const secret = config.jwt.jwtSecret[0];
       const [user] = await app.db
         .insert(users)
         .values({
@@ -509,7 +509,7 @@ describe('Auth routes', () => {
     });
 
     it("validate that the refresh token's claims are valid", async () => {
-      const secret = config.jwt.jwtSecret.at(-1)!;
+      const secret = config.jwt.jwtSecret[0];
       const refreshToken = await sign(
         {
           sub: 'authentication',
@@ -530,7 +530,7 @@ describe('Auth routes', () => {
     });
 
     it('forbid the access if the user no longer exists', async () => {
-      const secret = config.jwt.jwtSecret.at(-1)!;
+      const secret = config.jwt.jwtSecret[0];
 
       const refreshToken = await sign(
         {
