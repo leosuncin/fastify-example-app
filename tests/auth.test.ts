@@ -294,31 +294,46 @@ describe('Auth routes', () => {
   });
 
   describe('GET /auth/me', () => {
-    it('validate that the tokens are required', async () => {
+    it('validate that the session cookie is required', async () => {
       const response = await app.inject().get('/auth/me');
 
       assert.equal(response.statusCode, 401);
       assert.equal(response.json().message, 'An active session is required');
     });
 
-    it('validate that the cookies are signed', async () => {
+    it('validate that the session cookie is signed', async () => {
+      const sessionToken = await sign(
+        {
+          sub: 'authenticate',
+          iat: Date.now(),
+          exp: Date.now() + ms(config.jwt.sessionExpiresIn),
+          aud: 'session',
+          usr: {
+            id: 1,
+            email: faker.internet.email(),
+            username: faker.internet.userName(),
+            bio: '',
+            image: null,
+          },
+        },
+        config.jwt.jwtSecret[0],
+        { algorithm: config.jwt.algorithm as Algorithm },
+      );
       const response = await app
         .inject()
         .get('/auth/me')
-        .cookies({ [SESSION_COOKIE_NAME]: 'invalid' });
+        .cookies({ [SESSION_COOKIE_NAME]: sessionToken });
 
       assert.equal(response.statusCode, 401);
       assert.equal(response.json().message, 'Invalid session cookie');
     });
 
     it('validate that the session cookie is valid', async () => {
-      const secret = config.jwt.jwtSecret.at(-1)!;
+      const secret = config.jwt.jwtSecret[0];
       const sessionToken = await sign(
         {
-          sub: 1,
           iat: Date.now(),
           exp: Date.now() + ms(config.jwt.sessionExpiresIn),
-          aud: 'session',
         },
         secret,
       );
@@ -332,8 +347,8 @@ describe('Auth routes', () => {
       assert.equal(response.json().message, 'Invalid session cookie');
     });
 
-    it('validate that the session token is valid', async () => {
-      const secret = config.jwt.jwtSecret.at(-1)!;
+    it("validate that the session token's claims are valid", async () => {
+      const secret = config.jwt.jwtSecret[0];
       const user = {
         id: 1,
         email: faker.internet.email(),
@@ -343,7 +358,7 @@ describe('Auth routes', () => {
       };
       const sessionToken = await sign(
         {
-          sub: user.email,
+          sub: 'authenticate',
           exp: Date.now() + ms(config.jwt.sessionExpiresIn),
           aud: 'refresh',
           usr: user,
@@ -360,7 +375,7 @@ describe('Auth routes', () => {
     });
 
     it('respond with the user from the session', async () => {
-      const secret = config.jwt.jwtSecret.at(-1)!;
+      const secret = config.jwt.jwtSecret[0];
       const user = {
         id: 1,
         email: faker.internet.email(),
@@ -370,7 +385,7 @@ describe('Auth routes', () => {
       };
       const sessionToken = await sign(
         {
-          sub: user.email,
+          sub: 'authenticate',
           iat: Date.now(),
           exp: Date.now() + ms(config.jwt.sessionExpiresIn),
           aud: 'session',
@@ -423,6 +438,116 @@ describe('Auth routes', () => {
       assert.ok(refreshCookie);
       assert.equal(sessionCookie.value, '');
       assert.equal(refreshCookie.value, '');
+    });
+  });
+
+  describe('POST /auth/refresh', () => {
+    it('respond with the user and a new session cookie', async () => {
+      const secret = config.jwt.jwtSecret[0];
+      const [user] = await app.db
+        .insert(users)
+        .values({
+          email: faker.internet.email(),
+          username: faker.internet.userName(),
+          password: '',
+        })
+        .returning()
+        .execute();
+      const refreshTokenToken = await sign(
+        {
+          sub: 'refresh',
+          iat: Date.now(),
+          exp: Date.now() + ms(config.jwt.refreshExpiresIn),
+          aud: 'session',
+          uid: user.id,
+        },
+        secret,
+        { algorithm: config.jwt.algorithm as Algorithm },
+      );
+      const response = await app
+        .inject()
+        .post('/auth/refresh')
+        .cookies({ [REFRESH_COOKIE_NAME]: app.signCookie(refreshTokenToken) });
+
+      assert.equal(response.statusCode, 200);
+      assert.deepEqual(response.json(), {
+        email: user.email,
+        username: user.username,
+        bio: user.bio,
+        image: user.image,
+      });
+
+      assert.equal(response.cookies.length, 1);
+      assert.ok(
+        response.cookies.every(
+          ({ httpOnly, sameSite, secure }) =>
+            httpOnly &&
+            sameSite!.localeCompare(config.cookie.options.sameSite!, 'en', {
+              sensitivity: 'base',
+            }) === 0 &&
+            !!secure === config.cookie.options.secure,
+        ),
+      );
+      assert.ok(response.cookies[0].name === SESSION_COOKIE_NAME);
+    });
+
+    it('validate that the refresh cookie is required', async () => {
+      const response = await app.inject().post('/auth/refresh');
+
+      assert.equal(response.statusCode, 401);
+      assert.equal(response.json().message, 'A refresh cookie is required');
+    });
+
+    it('validate that the refresh cookie is signed', async () => {
+      const response = await app
+        .inject()
+        .post('/auth/refresh')
+        .cookies({ [REFRESH_COOKIE_NAME]: 'not-a-signed-value' });
+
+      assert.equal(response.statusCode, 401);
+      assert.equal(response.json().message, 'Invalid refresh cookie');
+    });
+
+    it("validate that the refresh token's claims are valid", async () => {
+      const secret = config.jwt.jwtSecret[0];
+      const refreshToken = await sign(
+        {
+          sub: 'authentication',
+          iat: Date.now(),
+          exp: Date.now() + ms(config.jwt.refreshExpiresIn),
+          aud: 'refresh',
+        },
+        secret,
+      );
+
+      const response = await app
+        .inject()
+        .post('/auth/refresh')
+        .cookies({ [REFRESH_COOKIE_NAME]: app.signCookie(refreshToken) });
+
+      assert.equal(response.statusCode, 401);
+      assert.equal(response.json().message, 'Invalid refresh token');
+    });
+
+    it('forbid the access if the user no longer exists', async () => {
+      const secret = config.jwt.jwtSecret[0];
+
+      const refreshToken = await sign(
+        {
+          sub: 'refresh',
+          exp: Date.now() + ms(config.jwt.refreshExpiresIn),
+          aud: 'session',
+          uid: 403,
+        },
+        secret,
+      );
+      const response = await app
+        .inject()
+        .post('/auth/refresh')
+        .cookies({ [REFRESH_COOKIE_NAME]: app.signCookie(refreshToken) });
+
+      assert.equal(response.statusCode, 403);
+      assert.equal(response.json().message, 'User no longer exists');
     });
   });
 });

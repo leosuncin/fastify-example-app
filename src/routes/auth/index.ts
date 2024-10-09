@@ -90,6 +90,20 @@ const logoutOptions: RouteShorthandOptions = {
   },
 };
 
+const refreshOptions: RouteShorthandOptions = {
+  schema: {
+    tags: ['User and Authentication'],
+    summary: 'Refresh the session',
+    description: 'Refresh the current session',
+    operationId: 'Refresh',
+    response: {
+      200: userResponse,
+      default: { $ref: 'HttpError' },
+    },
+    security: [{ refreshAuth: [] }],
+  },
+};
+
 const registerRoute: FastifyPluginAsync<Config> = async (
   instance: FastifyInstance,
 ) => {
@@ -193,7 +207,7 @@ const registerRoute: FastifyPluginAsync<Config> = async (
     '/me',
     {
       ...getCurrentUserOptions,
-      onRequest: instance.auth([instance.verifyTokens]),
+      onRequest: instance.auth([instance.verifySessionToken]),
     },
     async (request, reply) => {
       reply.send(request.user as User);
@@ -203,6 +217,27 @@ const registerRoute: FastifyPluginAsync<Config> = async (
   instance.delete('/logout', logoutOptions, async (_, reply) => {
     reply.clearAuthenticationTokens().code(204).send();
   });
+
+  instance.post(
+    '/refresh',
+    {
+      ...refreshOptions,
+      onRequest: instance.auth([instance.verifyRefreshToken]),
+    },
+    async (request, reply) => {
+      const { id } = request.user!;
+      const [user] = await instance.db
+        .select()
+        .from(users)
+        .where(eq(users.id, id))
+        .execute();
+
+      instance.assert(user, 403, 'User no longer exists');
+      await reply.setAuthenticationTokens(user, false);
+
+      reply.send(user);
+    },
+  );
 };
 
 export default registerRoute;

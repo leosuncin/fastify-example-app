@@ -1,5 +1,5 @@
 import { Algorithm, sign, verify } from '@node-rs/jsonwebtoken';
-import {
+import type {
   FastifyInstance,
   FastifyPluginCallback,
   FastifyReply,
@@ -11,17 +11,152 @@ import ms from 'ms';
 import type { Config } from '../../config/config.d.ts';
 import type { User } from '../schema/user.js';
 
-type Audience = 'session' | 'refresh';
-type Payload = {
-  sub: string;
+type SessionPayload = {
+  sub: 'authenticate';
   iat: number;
   exp: number;
-  aud: Audience;
-  usr?: Omit<User, 'password'>;
+  aud: 'session';
+  usr: Omit<User, 'password'>;
 };
+type RefreshPayload = {
+  sub: 'refresh';
+  iat: number;
+  exp: number;
+  aud: 'session';
+  uid: User['id'];
+};
+type VerifyResult<T> =
+  | {
+      valid: true;
+      value: T;
+      renew: boolean;
+    }
+  | {
+      valid: false;
+      value: Error;
+      renew: false;
+    };
 
 export const SESSION_COOKIE_NAME = 'SESSION_TOKEN';
 export const REFRESH_COOKIE_NAME = 'REFRESH_TOKEN';
+
+function signSession(options: Config['jwt'], user: SessionPayload['usr']) {
+  const [key] = options.jwtSecret;
+  const algorithm = options.algorithm as Algorithm;
+  const iat = Date.now();
+
+  if ('password' in user) {
+    delete user.password;
+  }
+
+  const claims: SessionPayload = {
+    sub: 'authenticate',
+    iat,
+    exp: iat + ms(options.sessionExpiresIn),
+    aud: 'session',
+    usr: user,
+  };
+
+  return sign(claims, key, { algorithm });
+}
+
+function signRefresh(options: Config['jwt'], uid: User['id']) {
+  const [key] = options.jwtSecret;
+  const algorithm = options.algorithm as Algorithm;
+  const iat = Date.now();
+
+  const claims: RefreshPayload = {
+    sub: 'refresh',
+    iat,
+    exp: iat + ms(options.refreshExpiresIn),
+    aud: 'session',
+    uid,
+  };
+
+  return sign(claims, key, { algorithm });
+}
+
+async function verifySession(
+  options: Config['jwt'],
+  token: string,
+): Promise<VerifyResult<SessionPayload>> {
+  const algorithm = options.algorithm as Algorithm;
+
+  for (const key of options.jwtSecret) {
+    try {
+      const value = (await verify(token, key, {
+        algorithms: [algorithm],
+        sub: 'authenticate',
+        aud: ['session'],
+        requiredSpecClaims: ['aud', 'exp', 'sub'],
+      })) as SessionPayload;
+
+      return {
+        valid: true,
+        value,
+        renew: key !== options.jwtSecret[0],
+      };
+    } catch (error) {
+      if (error instanceof Error && error.message === 'InvalidSignature') {
+        // Try the next secret
+        continue;
+      }
+
+      return {
+        valid: false,
+        value: new Error('Invalid session token', { cause: error }),
+        renew: false,
+      };
+    }
+  }
+
+  return {
+    valid: false,
+    value: new Error('Invalid session token'),
+    renew: false,
+  };
+}
+
+async function verifyRefresh(
+  options: Config['jwt'],
+  token: string,
+): Promise<VerifyResult<RefreshPayload>> {
+  const algorithm = options.algorithm as Algorithm;
+
+  for (const key of options.jwtSecret) {
+    try {
+      const value = (await verify(token, key, {
+        algorithms: [algorithm],
+        sub: 'refresh',
+        aud: ['session'],
+        requiredSpecClaims: ['aud', 'exp', 'sub'],
+      })) as RefreshPayload;
+
+      return {
+        valid: true,
+        value,
+        renew: key !== options.jwtSecret[0],
+      };
+    } catch (error) {
+      if (error instanceof Error && error.message === 'InvalidSignature') {
+        // Try the next secret
+        continue;
+      }
+
+      return {
+        valid: false,
+        value: new Error('Invalid refresh token', { cause: error }),
+        renew: false,
+      };
+    }
+  }
+
+  return {
+    valid: false,
+    value: new Error('Invalid refresh token'),
+    renew: false,
+  };
+}
 
 const auth: FastifyPluginCallback<Config> = (
   fastify: FastifyInstance,
@@ -30,39 +165,20 @@ const auth: FastifyPluginCallback<Config> = (
 ) => {
   fastify.decorateReply(
     'setAuthenticationTokens',
-    async function setAuthenticationTokens(user: Omit<User, 'password'>) {
-      const iat = Date.now();
-      const secret = options.jwt.jwtSecret.at(-1)!;
-
-      if ('password' in user) {
-        delete user.password;
-      }
-
-      const sessionToken = await sign(
-        {
-          sub: user.email,
-          iat,
-          exp: iat + ms(options.jwt.sessionExpiresIn),
-          aud: 'session',
-          usr: user,
-        } satisfies Payload,
-        secret,
-        { algorithm: options.jwt.algorithm as Algorithm },
-      );
-      const refreshToken = await sign(
-        {
-          sub: user.email,
-          iat,
-          exp: iat + ms(options.jwt.refreshExpiresIn),
-          aud: 'refresh',
-        } satisfies Payload,
-        secret,
-        { algorithm: options.jwt.algorithm as Algorithm },
-      );
-
+    async function setAuthenticationTokens(
+      user: Omit<User, 'password'>,
+      refresh = true,
+    ) {
+      const sessionToken = await signSession(options.jwt, user);
       this.setCookie(SESSION_COOKIE_NAME, sessionToken, {
         maxAge: ms(options.jwt.sessionExpiresIn) / 1_000,
       });
+
+      if (!refresh) {
+        return;
+      }
+
+      const refreshToken = await signRefresh(options.jwt, user.id);
       this.setCookie(REFRESH_COOKIE_NAME, refreshToken, {
         maxAge: ms(options.jwt.refreshExpiresIn) / 1_000,
       });
@@ -70,8 +186,8 @@ const auth: FastifyPluginCallback<Config> = (
   );
 
   fastify.decorate(
-    'verifyTokens',
-    async function verifyTokens(request: FastifyRequest) {
+    'verifySessionToken',
+    async function verifySessionToken(request: FastifyRequest) {
       const { [SESSION_COOKIE_NAME]: sessionCookie } = request.cookies;
 
       fastify.assert(sessionCookie, 401, 'An active session is required');
@@ -79,23 +195,14 @@ const auth: FastifyPluginCallback<Config> = (
 
       fastify.assert(sessionToken.valid, 401, 'Invalid session cookie');
 
-      try {
-        const secret = options.jwt.jwtSecret.at(-1)!;
-        const payload = (await verify(sessionToken.value, secret, {
-          algorithms: [options.jwt.algorithm as Algorithm],
-          aud: ['session'],
-          requiredSpecClaims: ['aud', 'exp', 'sub'],
-        })) as Payload;
+      const sessionPayload = await verifySession(
+        options.jwt,
+        sessionToken.value,
+      );
+      // @ts-expect-error value is an Error if valid is false
+      fastify.assert(sessionPayload.valid, 401, sessionPayload.value.message);
 
-        request.user = payload.usr!;
-      } catch (error) {
-        fastify.log.error(
-          { error },
-          error instanceof Error ? error.message : String(error),
-        );
-
-        throw fastify.httpErrors.unauthorized('Invalid session token');
-      }
+      request.user = sessionPayload.value.usr;
     },
   );
 
@@ -107,6 +214,27 @@ const auth: FastifyPluginCallback<Config> = (
       return this.clearCookie(SESSION_COOKIE_NAME).clearCookie(
         REFRESH_COOKIE_NAME,
       );
+    },
+  );
+
+  fastify.decorate(
+    'verifyRefreshToken',
+    async function verifyRefreshToken(request: FastifyRequest) {
+      const { [REFRESH_COOKIE_NAME]: refreshCookie } = request.cookies;
+
+      fastify.assert(refreshCookie, 401, 'A refresh cookie is required');
+      const refreshToken = request.unsignCookie(refreshCookie);
+
+      fastify.assert(refreshToken.valid, 401, 'Invalid refresh cookie');
+
+      const refreshPayload = await verifyRefresh(
+        options.jwt,
+        refreshToken.value,
+      );
+      // @ts-expect-error value is an Error if valid is false
+      fastify.assert(refreshPayload.valid, 401, refreshPayload.value.message);
+
+      request.user = { id: refreshPayload.value.uid };
     },
   );
 
